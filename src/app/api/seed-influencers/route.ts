@@ -1504,6 +1504,69 @@ const influencers = [
     potentialScore: 56
   },
   {
+    handle: '@AltcoinGordon',
+    followerCount: 85000,
+    profileUrl: 'https://x.com/AltcoinGordon',
+    bio: 'Altcoin analysis and trading. Technical analysis and market insights.',
+    websiteUrl: 'https://altcoingordon.com',
+    status: 'New',
+    potentialScore: 63
+  },
+  {
+    handle: '@AlpineAnalyst',
+    followerCount: 75000,
+    profileUrl: 'https://x.com/AlpineAnalyst',
+    bio: 'Crypto analyst and trader. Technical analysis and market insights.',
+    websiteUrl: 'https://alpineanalyst.com',
+    status: 'New',
+    potentialScore: 61
+  },
+  {
+    handle: '@Altcoin_Media',
+    followerCount: 65000,
+    profileUrl: 'https://x.com/Altcoin_Media',
+    bio: 'Altcoin news and analysis. Cryptocurrency market insights.',
+    websiteUrl: 'https://altcoinmedia.com',
+    status: 'New',
+    potentialScore: 59
+  },
+  {
+    handle: '@CryptoGeekNews',
+    followerCount: 55000,
+    profileUrl: 'https://x.com/CryptoGeekNews',
+    bio: 'Crypto news and analysis. Technology and blockchain insights.',
+    websiteUrl: 'https://cryptogeeknews.com',
+    status: 'New',
+    potentialScore: 57
+  },
+  {
+    handle: '@genelambo',
+    followerCount: 45000,
+    profileUrl: 'https://x.com/genelambo',
+    bio: 'Crypto analyst and trader. Technical analysis and market insights.',
+    websiteUrl: 'https://genelambo.com',
+    status: 'New',
+    potentialScore: 55
+  },
+  {
+    handle: '@decenntrahq',
+    followerCount: 35000,
+    profileUrl: 'https://x.com/decenntrahq',
+    bio: 'DeFi and Web3 development. Blockchain technology and insights.',
+    websiteUrl: 'https://decenntrahq.com',
+    status: 'New',
+    potentialScore: 63
+  },
+  {
+    handle: '@kgen',
+    followerCount: 28000,
+    profileUrl: 'https://x.com/kgen',
+    bio: 'Crypto analyst and trader. Technical analysis and market insights.',
+    websiteUrl: 'https://kgen.com',
+    status: 'New',
+    potentialScore: 56
+  },
+  {
     handle: '@CryptoCapo_',
     followerCount: 25000,
     profileUrl: 'https://x.com/CryptoCapo_',
@@ -1746,7 +1809,6 @@ const influencers = [
     status: 'New',
     potentialScore: 85
   },
-  },
   {
     handle: '@Bitcoin_Expert',
     followerCount: 65000,
@@ -1837,7 +1899,6 @@ const influencers = [
     status: 'New',
     potentialScore: 71
   },
-  },
   {
     handle: '@cryptotickerio',
     followerCount: 420000,
@@ -1865,32 +1926,6 @@ const influencers = [
     status: 'New',
     potentialScore: 70
   }
-]
-
-export async function POST() {
-  try {
-    // Clear existing influencers
-    await db.activity.deleteMany()
-    await db.contact.deleteMany()
-    await db.analysis.deleteMany()
-    await db.influencer.deleteMany()
-
-    // Add new influencers
-    const createdInfluencers = await Promise.all(
-      influencers.map(async (influencer) => {
-        const created = await db.influencer.create({
-          data: influencer
-        })
-
-        // Add contacts for some influencers
-        if (influencer.websiteUrl && Math.random() > 0.3) {
-          await db.contact.create({
-            data: {
-              influencerId: created.id,
-              email: `contact@${influencer.websiteUrl.replace('https://', '').replace('https://www.', '').replace('/', '')}`,
-              contactType: 'business',
-              isVerified: false
-            }
           })
         }
 
