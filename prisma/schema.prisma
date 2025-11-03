@@ -1,0 +1,96 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Influencer {
+  id              Int      @id @default(autoincrement())
+  handle          String   @unique
+  followerCount   Int?
+  profileUrl      String   @unique
+  bio             String?
+  websiteUrl      String?
+  potentialScore  Int?     // 0-100
+  status          String   @default("New") // "New", "Hot Lead", "Warm Lead", "Cold Lead", "Contacted", "Engaged"
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  analyses        Analysis[]
+  contacts        Contact[]
+  activities      Activity[]
+  
+  @@map("influencers")
+}
+
+model Analysis {
+  id             Int      @id @default(autoincrement())
+  influencerId   Int
+  analysisDate   DateTime @default(now())
+  grokSummary    String?
+  scoreBreakdown String?  // JSON string for detailed scores
+  
+  influencer     Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+  
+  @@map("analyses")
+}
+
+model Contact {
+  id            Int      @id @default(autoincrement())
+  influencerId  Int
+  email         String?
+  contactType   String?  // "business", "personal", "support"
+  isVerified    Boolean  @default(false)
+  
+  influencer    Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+  
+  @@map("contacts")
+}
+
+model Activity {
+  id            Int      @id @default(autoincrement())
+  influencerId  Int
+  activityType  String   // "dm_sent", "email_sent", "reply_received", "note_added"
+  content       String?
+  timestamp     DateTime @default(now())
+  
+  influencer    Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+  
+  @@map("activities")
+}
+
+model OutreachSequence {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  steps       SequenceStep[]
+  
+  @@map("outreach_sequences")
+}
+
+model SequenceStep {
+  id             Int      @id @default(autoincrement())
+  sequenceId     Int
+  stepOrder      Int
+  stepType       String   // "dm", "email", "wait", "condition"
+  template       String?
+  waitDays       Int?
+  condition      String?  // JSON string for conditional logic
+  
+  sequence       OutreachSequence @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+  
+  @@map("sequence_steps")
+}
