@@ -1,0 +1,68 @@
+// Schema for local development using SQLite
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./prisma/db/custom.db"
+}
+
+model Influencer {
+  id        Int       @id @default(autoincrement())
+  handle    String    @unique
+  followerCount Int
+  profileUrl String
+  bio       String?
+  websiteUrl String?
+  potentialScore Int?
+  status     String    @default("New")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  contacts  Contact[]
+  activities Activity[]
+  analyses  Analysis[]
+
+  @@map("influencers")
+}
+
+model Contact {
+  id           Int      @id @default(autoincrement())
+  influencerId  Int
+  type         String
+  value        String
+  timestamp    DateTime @default(now())
+  
+  influencer    Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+  
+  @@map("contacts")
+}
+
+model Activity {
+  id           Int      @id @default(autoincrement())
+  influencerId  Int
+  activityType String
+  content      String
+  timestamp    DateTime @default(now())
+  
+  influencer    Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+  
+  @@map("activities")
+}
+
+model Analysis {
+  id             Int      @id @default(autoincrement())
+  influencerId   Int
+  analysisType   String
+  content        String
+  sentiment      String?
+  topics         String[]
+  engagementRate Float?
+  recommendation String?
+  analysisDate   DateTime @default(now())
+  
+  influencer     Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+  
+  @@map("analyses")
+}
