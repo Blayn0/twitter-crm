@@ -20,6 +20,8 @@ interface Influencer {
   handle: string
   followerCount?: number
   bio?: string
+  profileUrl?: string
+  websiteUrl?: string
   potentialScore?: number
   status: string
   createdAt: string
@@ -61,9 +63,20 @@ export function InfluencerKanban() {
     try {
       const response = await fetch('/api/influencers')
       const data = await response.json()
-      setInfluencers(data)
+      
+      // Check if data is an error response
+      if (data.error) {
+        console.error('API Error:', data.error)
+        setInfluencers([])
+      } else if (Array.isArray(data)) {
+        setInfluencers(data)
+      } else {
+        console.error('Unexpected data format:', data)
+        setInfluencers([])
+      }
     } catch (error) {
       console.error('Error fetching influencers:', error)
+      setInfluencers([])
     } finally {
       setLoading(false)
     }
@@ -134,9 +147,16 @@ export function InfluencerKanban() {
                           <div className="flex items-start justify-between mb-4">
                             <div className="flex items-center gap-4">
                               <Avatar className="h-12 w-12">
-                                <AvatarImage src={`https://unavatar.io/${influencer.handle.replace('@', '')}`} />
-                                <AvatarFallback>
-                                  <User className="h-6 w-6" />
+                                <AvatarImage 
+                                  src={`https://unavatar.io/${influencer.handle.replace('@', '')}`} 
+                                  onError={(e) => {
+                                    // Fallback to a deterministic avatar based on handle
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                  }}
+                                />
+                                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
+                                  {influencer.handle.replace('@', '').slice(0, 2).toUpperCase()}
                                 </AvatarFallback>
                               </Avatar>
                               <div>

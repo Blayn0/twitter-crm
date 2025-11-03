@@ -2,3 +2,65 @@ datasource db {
   provider = "sqlite"
   url      = "file:./db/custom.db"
 }
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Influencer {
+  id                Int       @id @default(autoincrement())
+  handle            String    @unique
+  followerCount     Int?
+  profileUrl        String?
+  bio               String?
+  websiteUrl        String?
+  status            String    @default("New")
+  potentialScore    Int?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  contacts          Contact[]
+  activities        Activity[]
+  analyses          Analysis[]
+  
+  @@map("influencers")
+}
+
+model Contact {
+  id            Int      @id @default(autoincrement())
+  influencerId  Int
+  email         String?
+  phoneNumber   String?
+  contactType   String?
+  isVerified    Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  influencer    Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+  
+  @@map("contacts")
+}
+
+model Activity {
+  id            Int      @id @default(autoincrement())
+  influencerId  Int
+  activityType  String
+  content       String?
+  timestamp     DateTime @default(now())
+  
+  influencer    Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+  
+  @@map("activities")
+}
+
+model Analysis {
+  id              Int      @id @default(autoincrement())
+  influencerId    Int
+  grokSummary     String?
+  scoreBreakdown  String?
+  analysisDate    DateTime @default(now())
+  
+  influencer      Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+  
+  @@map("analyses")
+}
