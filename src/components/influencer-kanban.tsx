@@ -1,19 +1,20 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
-import { MoreHorizontal, Eye, MessageCircle, Mail, User } from 'lucide-react'
+import { MoreHorizontal, Eye, MessageCircle, Mail, User, Search, X } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Input } from '@/components/ui/input'
 
 interface Influencer {
   id: number
@@ -42,18 +43,23 @@ interface Influencer {
   }>
 }
 
+interface InfluencerKanbanProps {
+  onInfluencerChange?: () => void
+}
+
 const columns = [
   { id: 'New', title: 'New Leads', color: 'bg-gray-100' },
-  { id: 'Hot Lead', title: 'Hot Leads', color: 'bg-red-50' },
-  { id: 'Warm Lead', title: 'Warm Leads', color: 'bg-orange-50' },
-  { id: 'Cold Lead', title: 'Cold Leads', color: 'bg-blue-50' },
   { id: 'Contacted', title: 'Contacted', color: 'bg-purple-50' },
-  { id: 'Engaged', title: 'Engaged', color: 'bg-green-50' }
+  { id: 'Engaged', title: 'Engaged', color: 'bg-green-50' },
+  { id: 'Warm Lead', title: 'Warm Leads', color: 'bg-orange-50' },
+  { id: 'Hot Lead', title: 'Hot Leads', color: 'bg-red-50' },
+  { id: 'Cold Lead', title: 'Cold Leads', color: 'bg-blue-50' }
 ]
 
-export function InfluencerKanban() {
+export function InfluencerKanban({ onInfluencerChange }: InfluencerKanbanProps) {
   const [influencers, setInfluencers] = useState<Influencer[]>([])
   const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
     fetchInfluencers()
@@ -98,6 +104,18 @@ export function InfluencerKanban() {
     }
   }
 
+  // Filter influencers based on search term
+  const filteredInfluencers = useMemo(() => {
+    if (!searchTerm.trim()) return influencers
+    
+    const lowerSearchTerm = searchTerm.toLowerCase()
+    return influencers.filter(influencer => 
+      influencer.handle.toLowerCase().includes(lowerSearchTerm) ||
+      influencer.bio?.toLowerCase().includes(lowerSearchTerm) ||
+      influencer.status.toLowerCase().includes(lowerSearchTerm)
+    )
+  }, [influencers, searchTerm])
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Hot Lead': return 'destructive'
@@ -121,7 +139,38 @@ export function InfluencerKanban() {
   }
 
   return (
-    <div className="flex gap-6 overflow-x-auto pb-6 px-2">
+    <div className="space-y-4">
+      {/* Search Bar */}
+      <div className="flex items-center gap-2 p-4 bg-white rounded-lg shadow-sm border">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Input
+            type="text"
+            placeholder="Search by handle, bio, or status... (e.g., @SJosephBurns)"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 pr-10"
+          />
+          {searchTerm && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSearchTerm('')}
+              className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+        {searchTerm && (
+          <div className="text-sm text-muted-foreground">
+            Found {filteredInfluencers.length} influencer{filteredInfluencers.length !== 1 ? 's' : ''}
+          </div>
+        )}
+      </div>
+
+      {/* Kanban Board */}
+      <div className="flex gap-6 overflow-x-auto pb-6 px-2">
         {columns.map(column => (
           <div key={column.id} className="flex-shrink-0 w-96">
             <Card className={`${column.color} min-h-[700px]`}>
@@ -129,19 +178,19 @@ export function InfluencerKanban() {
                 <CardTitle className="text-xl flex items-center justify-between">
                   {column.title}
                   <Badge variant="outline" className="text-sm px-3 py-1">
-                    {influencers.filter(inf => inf.status === column.id).length}
+                    {filteredInfluencers.filter(inf => inf.status === column.id).length}
                   </Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-5">
                 <ScrollArea className="h-[600px]">
                   <div className="space-y-4">
-                    {influencers
+                    {filteredInfluencers
                       .filter(influencer => influencer.status === column.id)
                       .map(influencer => (
                         <Card 
                           key={influencer.id} 
-                          className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
+                          className="cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02] border-2 border-transparent hover:border-blue-200"
                         >
                         <CardContent className="p-5">
                           <div className="flex items-start justify-between mb-4">
@@ -265,12 +314,13 @@ export function InfluencerKanban() {
                         </CardContent>
                       </Card>
                     ))}
-                </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
-        </div>
-      ))}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

@@ -3,11 +3,12 @@ import { db } from '@/lib/db'
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const influencer = await db.influencer.findUnique({
-      where: { id: parseInt(params.id) },
+      where: { id: parseInt(id) },
       include: {
         contacts: true,
         activities: {
@@ -38,13 +39,14 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const data = await request.json()
+    const { id } = await params
     
     const influencer = await db.influencer.update({
-      where: { id: parseInt(params.id) },
+      where: { id: parseInt(id) },
       data: {
         ...(data.status && { status: data.status }),
         ...(data.potentialScore && { potentialScore: data.potentialScore }),

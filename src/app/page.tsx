@@ -11,6 +11,7 @@ import { InfluencerKanban } from '@/components/influencer-kanban'
 import { InfluencerDiscovery } from '@/components/influencer-discovery'
 import { OutreachSequences } from '@/components/outreach-sequences'
 import { AnalyticsDashboard } from '@/components/analytics-dashboard'
+import { AddInfluencerModal } from '@/components/add-influencer-modal'
 
 interface DashboardStats {
   totalInfluencers: number
@@ -39,6 +40,7 @@ export default function Home() {
 
   const [isSeeding, setIsSeeding] = useState(false)
   const [isSeedingExtended, setIsSeedingExtended] = useState(false)
+  const [showAddInfluencer, setShowAddInfluencer] = useState(false)
 
   useEffect(() => {
     // Fetch dashboard stats
@@ -115,17 +117,24 @@ export default function Home() {
               {isSeedingExtended ? 'Seeding...' : 'Add 50+ More'}
             </Button>
             <Button variant="outline" size="sm">
-              <Search className="w-5 h-5 mr-2" />
-              Search
-            </Button>
-            <Button variant="outline" size="sm">
               <Filter className="w-5 h-5 mr-2" />
               Filter
             </Button>
-            <Button size="sm">
-              <Plus className="w-5 h-5 mr-2" />
-              Add Influencer
-            </Button>
+            <AddInfluencerModal 
+              onInfluencerAdded={() => {
+                // Refresh stats after adding influencer
+                fetch('/api/dashboard/stats')
+                  .then(res => res.json())
+                  .then(data => setStats(data))
+                  .catch(console.error)
+              }}
+              trigger={
+                <Button size="sm">
+                  <Plus className="w-5 h-5 mr-2" />
+                  Add Influencer
+                </Button>
+              }
+            />
           </div>
         </div>
 
@@ -193,7 +202,13 @@ export default function Home() {
           </TabsList>
 
           <TabsContent value="kanban" className="space-y-4 mt-6">
-            <InfluencerKanban />
+            <InfluencerKanban onInfluencerChange={() => {
+              // Refresh stats after any influencer change
+              fetch('/api/dashboard/stats')
+                .then(res => res.json())
+                .then(data => setStats(data))
+                .catch(console.error)
+            }} />
           </TabsContent>
 
           <TabsContent value="discovery" className="space-y-4 mt-6">
